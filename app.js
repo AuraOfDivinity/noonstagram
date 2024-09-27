@@ -4,6 +4,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 
+const userRoutes = require("./routes/user.routes");
+
 // Load environment variables
 dotenv.config();
 
@@ -18,6 +20,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/health-check", (req, res) => {
   return res.status(200).json({ message: "server running successfully." });
 });
+
+// Routes
+app.use("/api/users", userRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
