@@ -20,7 +20,6 @@ exports.verifyToken = (req, res, next) => {
   const jwtToken = tokenParts[1];
 
   try {
-    console.log({ jwtToken }); // Log the extracted token
     const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
     req.user = decoded;
     next();

@@ -21,7 +21,8 @@ const Post = db
   .catch((err) => console.error("Error creating Post table: ", err));
 
 // Create a new post
-Post.create = async (userId, title, description, imageUrl) => {
+Post.create = async (data) => {
+  const { userId, title, description, imageUrl } = data;
   const [rows] = await db
     .promise()
     .query(

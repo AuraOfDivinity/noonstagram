@@ -4,20 +4,44 @@ const Post = require("../models/post.model");
 const Like = require("../models/like.model");
 const User = require("../models/user.model");
 
-// Create a new post
-exports.createPost = async (req, res) => {
-  const { title, description, imageUrl } = req.body;
-  const userId = req.user.id; // Assume req.user contains the authenticated user's ID
+const { upload } = require("../config/aws.config");
 
-  try {
-    const newPost = await Post.create(userId, title, description, imageUrl);
-    res.status(201).json({
-      message: "Post created successfully.",
-      postId: newPost.insertId,
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Server error.", error: err.message });
-  }
+// Upload image and create a post
+exports.createPost = (req, res) => {
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ message: "Error uploading image", error: err });
+    }
+
+    const { title, description } = req.body;
+    const imageUrl = req.file ? req.file.location : null;
+    if (!title) {
+      return res.status(400).json({ message: "Title is required" });
+    }
+
+    if (!description) {
+      return res.status(400).json({ message: "Description is required" });
+    }
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: "Image is required" });
+    }
+    const newPost = {
+      title,
+      description: description || null,
+      imageUrl,
+      userId: req.user.id,
+    };
+    Post.create(newPost)
+      .then((post) =>
+        res.status(201).json({ message: "Post successfully created!" })
+      )
+      .catch((err) =>
+        res.status(500).json({ message: "Server error", error: err.message })
+      );
+  });
 };
 
 // Get all posts
