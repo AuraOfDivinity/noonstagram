@@ -49,4 +49,15 @@ User.findById = async (id) => {
   return rows[0];
 };
 
+// Get liked posts for a user
+User.getLikedPosts = async (userId) => {
+  const query = `
+      SELECT posts.* FROM posts
+      JOIN likes ON posts.id = likes.post_id
+      WHERE likes.user_id = ?
+    `;
+  const [rows] = await db.promise().query(query, [userId]);
+  return rows;
+};
+
 module.exports = User;

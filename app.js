@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 
 const userRoutes = require("./routes/user.routes");
+const postRoutes = require("./routes/post.routes");
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/api/health-check", (req, res) => {
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
