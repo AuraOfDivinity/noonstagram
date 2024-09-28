@@ -32,73 +32,70 @@ Post.create = async (data) => {
   return rows;
 };
 
-// Get all posts
-Post.getAll = async (limit = 3, offset = 0) => {
+Post.getAllPosts = async (limit = 3, offset = 0) => {
   const query = `
     SELECT 
       posts.*, 
-      post_users.name AS post_user_name, 
-      comments.id AS comment_id,
-      comments.text AS comment_text,
-      comments.created_at AS comment_created_at,
-      comment_users.name AS comment_user_name
+      post_users.name AS post_user_name
     FROM posts
     JOIN users AS post_users ON posts.user_id = post_users.id
-    LEFT JOIN comments ON comments.post_id = posts.id
-    LEFT JOIN users AS comment_users ON comments.user_id = comment_users.id
     ORDER BY posts.created_at DESC
     LIMIT ? OFFSET ?
   `;
 
   const [rows] = await db.promise().query(query, [limit, offset]);
 
-  // Transform the rows into the desired format
-  const posts = rows.reduce((acc, row) => {
-    const {
-      id,
-      user_id,
-      post_user_name,
-      image_url,
-      description,
-      created_at,
-      likes,
-      comment_id,
-      comment_text,
-      comment_created_at,
-      comment_user_name,
-    } = row;
-
-    // Find the post or create a new one
-    let post = acc.find((p) => p.id === id);
-    if (!post) {
-      post = {
-        id,
-        user_id,
-        user_name: post_user_name,
-        image_url,
-        description,
-        created_at,
-        likes,
-        comments: [],
-      };
-      acc.push(post);
-    }
-
-    // If there's a comment, add it to the post
-    if (comment_id) {
-      post.comments.push({
-        id: comment_id,
-        text: comment_text,
-        created_at: comment_created_at,
-        user_name: comment_user_name, // Add the comment user name
-      });
-    }
-
-    return acc;
-  }, []);
+  const posts = rows.map((post) => ({
+    id: post.id,
+    user_id: post.user_id,
+    user_name: post.post_user_name,
+    title: post.title,
+    description: post.description,
+    image_url: post.image_url,
+    created_at: post.created_at,
+    likes: post.likes,
+    comments: [],
+  }));
 
   return posts;
 };
 
-// Export Post...
+Post.getCommentsForPosts = async (postIds) => {
+  if (postIds.length === 0) return [];
+
+  const query = `
+    SELECT 
+      comments.*, 
+      comment_users.name AS comment_user_name
+    FROM comments
+    JOIN users AS comment_users ON comments.user_id = comment_users.id
+    WHERE comments.post_id IN (?)
+  `;
+
+  const [rows] = await db.promise().query(query, [postIds]);
+
+  const comments = rows.map((comment) => ({
+    post_id: comment.post_id,
+    id: comment.id,
+    text: comment.text,
+    created_at: comment.created_at,
+    user_name: comment.comment_user_name,
+  }));
+
+  return comments;
+};
+
+Post.getAll = async (limit = 3, offset = 0) => {
+  const posts = await Post.getAllPosts(limit, offset);
+
+  const postIds = posts.map((post) => post.id);
+  const comments = await Post.getCommentsForPosts(postIds);
+
+  posts.forEach((post) => {
+    post.comments = comments.filter((comment) => comment.post_id === post.id);
+  });
+
+  return posts;
+};
+
 module.exports = Post;

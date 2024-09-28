@@ -5,6 +5,6 @@ const commentController = require("../controllers/comment.controller");
 const { verifyToken } = require("../middlewares/auth.middleware");
 
 // Protected routes
-router.post("/:user_id/:post_id", verifyToken, commentController.createComment);
+router.post("/:post_id", verifyToken, commentController.createComment);
 
 module.exports = router;

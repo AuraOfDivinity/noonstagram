@@ -2,20 +2,18 @@ const Comment = require("../models/comment.model");
 
 exports.createComment = async (req, res) => {
   const { text } = req.body;
-  const { user_id, post_id } = req.params;
+  const { post_id } = req.params;
+
+  console.log(req.user);
 
   const newComment = {
     post_id,
-    user_id,
+    user_id: req.user.id,
     text,
   };
 
   if (!post_id) {
     return res.status(400).json({ message: "Post ID is required" });
-  }
-
-  if (!user_id) {
-    return res.status(400).json({ message: "User ID is required" });
   }
 
   if (!text) {
