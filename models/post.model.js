@@ -33,16 +33,72 @@ Post.create = async (data) => {
 };
 
 // Get all posts
-Post.getAll = async () => {
+Post.getAll = async (limit = 3, offset = 0) => {
   const query = `
-    SELECT posts.*, users.name AS user_name
+    SELECT 
+      posts.*, 
+      post_users.name AS post_user_name, 
+      comments.id AS comment_id,
+      comments.text AS comment_text,
+      comments.created_at AS comment_created_at,
+      comment_users.name AS comment_user_name
     FROM posts
-    JOIN users ON posts.user_id = users.id
+    JOIN users AS post_users ON posts.user_id = post_users.id
+    LEFT JOIN comments ON comments.post_id = posts.id
+    LEFT JOIN users AS comment_users ON comments.user_id = comment_users.id
     ORDER BY posts.created_at DESC
+    LIMIT ? OFFSET ?
   `;
 
-  const [rows] = await db.promise().query(query);
-  return rows;
+  const [rows] = await db.promise().query(query, [limit, offset]);
+
+  // Transform the rows into the desired format
+  const posts = rows.reduce((acc, row) => {
+    const {
+      id,
+      user_id,
+      post_user_name,
+      image_url,
+      description,
+      created_at,
+      likes,
+      comment_id,
+      comment_text,
+      comment_created_at,
+      comment_user_name,
+    } = row;
+
+    // Find the post or create a new one
+    let post = acc.find((p) => p.id === id);
+    if (!post) {
+      post = {
+        id,
+        user_id,
+        user_name: post_user_name,
+        image_url,
+        description,
+        created_at,
+        likes,
+        comments: [],
+      };
+      acc.push(post);
+    }
+
+    // If there's a comment, add it to the post
+    if (comment_id) {
+      post.comments.push({
+        id: comment_id,
+        text: comment_text,
+        created_at: comment_created_at,
+        user_name: comment_user_name, // Add the comment user name
+      });
+    }
+
+    return acc;
+  }, []);
+
+  return posts;
 };
+
 // Export Post...
 module.exports = Post;
