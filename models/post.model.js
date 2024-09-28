@@ -34,11 +34,15 @@ Post.create = async (data) => {
 
 // Get all posts
 Post.getAll = async () => {
-  const [rows] = await db
-    .promise()
-    .query("SELECT * FROM posts ORDER BY created_at DESC");
+  const query = `
+    SELECT posts.*, users.name AS user_name
+    FROM posts
+    JOIN users ON posts.user_id = users.id
+    ORDER BY posts.created_at DESC
+  `;
+
+  const [rows] = await db.promise().query(query);
   return rows;
 };
-
 // Export Post...
 module.exports = Post;
