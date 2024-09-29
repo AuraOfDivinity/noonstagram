@@ -4,8 +4,6 @@ exports.createComment = async (req, res) => {
   const { text } = req.body;
   const { post_id } = req.params;
 
-  console.log(req.user);
-
   const newComment = {
     post_id,
     user_id: req.user.id,
