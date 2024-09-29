@@ -36,7 +36,7 @@ exports.createPost = (req, res) => {
     };
     Post.create(newPost)
       .then((post) =>
-        res.status(201).json({ message: "Post successfully created!" })
+        res.status(201).json({ message: "Post successfully created!", post })
       )
       .catch((err) =>
         res.status(500).json({ message: "Server error", error: err.message })
@@ -77,7 +77,7 @@ exports.unlikePost = async (req, res) => {
   try {
     await Like.remove(userId, postId);
     const post = await Post.getPostById(postId, userId);
-    res.status(200).json({ message: "Post liked successfully.", post });
+    res.status(200).json({ message: "Post unliked successfully.", post });
   } catch (err) {
     res.status(500).json({ message: "Server error.", error: err.message });
   }

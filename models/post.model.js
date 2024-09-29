@@ -20,16 +20,19 @@ const Post = db
   )
   .catch((err) => console.error("Error creating Post table: ", err));
 
-// Create a new post
 Post.create = async (data) => {
   const { userId, title, description, imageUrl } = data;
-  const [rows] = await db
+  const [result] = await db
     .promise()
     .query(
       "INSERT INTO posts (user_id, title, description, image_url) VALUES (?, ?, ?, ?)",
       [userId, title, description, imageUrl]
     );
-  return rows;
+  const [rows] = await db
+    .promise()
+    .query("SELECT * FROM posts WHERE id = LAST_INSERT_ID()");
+
+  return rows[0]; // Return the first (and only) row, which is the newly created post
 };
 
 Post.getAllPosts = async (userId, limit = 3, offset = 0) => {
