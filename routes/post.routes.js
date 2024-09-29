@@ -8,7 +8,7 @@ const { verifyToken } = require("../middlewares/auth.middleware");
 router.post("/", verifyToken, postController.createPost); // Create a post
 router.get("/", verifyToken, postController.getAllPosts); // Get all posts
 router.post("/:postId/like", verifyToken, postController.likePost); // Like a post
-router.delete("/:postId/unlike", verifyToken, postController.unlikePost); // Unlike a post
+router.post("/:postId/unlike", verifyToken, postController.unlikePost); // Unlike a post
 router.get("/liked", verifyToken, postController.getLikedPosts); // Get liked posts
 
 module.exports = router;

@@ -47,7 +47,8 @@ exports.createPost = (req, res) => {
 // Get all posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.getAll();
+    const userId = req.user.id;
+    const posts = await Post.getAll(userId);
     res.json(posts);
   } catch (err) {
     res.status(500).json({ message: "Server error.", error: err.message });
@@ -61,7 +62,8 @@ exports.likePost = async (req, res) => {
 
   try {
     await Like.add(userId, postId);
-    res.status(200).json({ message: "Post liked successfully." });
+    const post = await Post.getPostById(postId, userId);
+    res.status(200).json({ message: "Post liked successfully.", post });
   } catch (err) {
     res.status(500).json({ message: "Server error.", error: err.message });
   }
@@ -74,7 +76,8 @@ exports.unlikePost = async (req, res) => {
 
   try {
     await Like.remove(userId, postId);
-    res.status(200).json({ message: "Post unliked successfully." });
+    const post = await Post.getPostById(postId, userId);
+    res.status(200).json({ message: "Post liked successfully.", post });
   } catch (err) {
     res.status(500).json({ message: "Server error.", error: err.message });
   }
